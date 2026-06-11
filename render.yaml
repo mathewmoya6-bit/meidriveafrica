@@ -1,0 +1,54 @@
+# render.yaml - Blueprint for Render.com deployment
+# Use this file to deploy your backend service
+
+services:
+  - type: web
+    name: mei-drive-backend
+    runtime: node
+    repo: https://github.com/YOUR_USERNAME/mei-drive-backend
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: BACKEND_URL
+        value: https://meidriveafrica-backend.onrender.com
+      - key: MPESA_CONSUMER_KEY
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_SHORTCODE
+        value: 4095377
+      - key: MPESA_CALLBACK_URL
+        value: https://meidriveafrica-backend.onrender.com/api/payments/mpesa/callback
+      - key: SUPABASE_URL
+        value: https://qpqkmmkrzxlhcpccefjn.supabase.co
+      - key: SUPABASE_ANON_KEY
+        sync: false
+    healthCheckPath: /health
+    autoDeploy: true
+    scaling:
+      minInstances: 1
+      maxInstances: 1
+
+  - type: cron
+    name: payment-status-checker
+    runtime: node
+    schedule: "*/5 * * * *"  # Every 5 minutes
+    buildCommand: npm install
+    startCommand: node scripts/check-pending-payments.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BACKEND_URL
+        value: https://meidriveafrica-backend.onrender.com
+      - key: SUPABASE_URL
+        value: https://qpqkmmkrzxlhcpccefjn.supabase.co
+      - key: SUPABASE_ANON_KEY
+        sync: false
